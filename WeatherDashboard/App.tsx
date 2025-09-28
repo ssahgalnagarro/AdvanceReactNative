@@ -1,6 +1,6 @@
 import React, { JSX } from 'react';
-import LocationProbe from './src/screens/LocationProbe';
+import WeatherProbe from './src/screens/WeatherProbe';
 
 export default function App(): JSX.Element {
-  return <LocationProbe />;
+  return <WeatherProbe />;
 }
