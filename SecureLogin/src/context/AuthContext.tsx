@@ -1,17 +1,30 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from 'react';
 import type { JSX, ReactNode } from 'react';
 import type { AuthToken } from '../types/auth';
-import { getAuthToken } from '../storage/storage';
+import {
+  getAuthToken,
+  saveAuthToken,
+  removeAuthToken,
+} from '../storage/storage';
 
 export interface AuthContextValue {
   token: AuthToken | null;
   isBootstrapping: boolean;
-  // Step-2 will add: login(credentials), logout()
+  setAuthToken: (token: AuthToken) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue>({
   token: null,
   isBootstrapping: true,
+  setAuthToken: async () => {},
+  logout: async () => {},
 });
 
 interface AuthProviderProps {
@@ -22,6 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
   const [token, setToken] = useState<AuthToken | null>(null);
   const [isBootstrapping, setBootstrapping] = useState<boolean>(true);
 
+  // On app start, load token from secure storage
   useEffect(() => {
     (async () => {
       const existing: AuthToken | null = await getAuthToken();
@@ -30,9 +44,26 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     })();
   }, []);
 
+  // Expose a method to update + persist token
+  const setAuthToken = useCallback(async (authToken: AuthToken) => {
+    await saveAuthToken(authToken);
+    setToken(authToken);
+  }, []);
+
+  // Expose logout
+  const logout = useCallback(async () => {
+    await removeAuthToken();
+    setToken(null);
+  }, []);
+
   const value: AuthContextValue = useMemo(
-    () => ({ token, isBootstrapping }),
-    [token, isBootstrapping],
+    () => ({
+      token,
+      isBootstrapping,
+      setAuthToken,
+      logout,
+    }),
+    [token, isBootstrapping, setAuthToken, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
