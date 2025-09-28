@@ -4,6 +4,7 @@ import { ensureLocationPermission } from '../services/permissions';
 import { getCurrentCoordinates } from '../services/location';
 import { fetchWeather } from '../api/weather';
 import type { WeatherResponse } from '../types/weather';
+import WeatherSkeleton from '../components/weatherskeleton';
 
 const API_KEY = '7793c81d5caec3cbb253fabef4f67d1b';
 
@@ -40,8 +41,8 @@ export default function WeatherProbe(): JSX.Element {
     <SafeAreaView style={styles.root}>
       <View style={styles.card}>
         <Text style={styles.title}>Weather Probe</Text>
-        {status === 'loading' && <Text>Loading…</Text>}
-        {weather && (
+        {status === 'loading' && <WeatherSkeleton />}
+        {weather && status !== 'loading' && (
           <>
             <Text>{weather.name}</Text>
             <Text>Temp: {weather.main.temp} °C</Text>
